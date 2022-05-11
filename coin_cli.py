@@ -5,6 +5,7 @@ import json
 import datetime
 import threading
 global bals
+exclude_from_baltop = []
 txs_waiting = 0
 bals = {}
 def pog_logger(text, type):
@@ -17,21 +18,21 @@ def pog_logger(text, type):
 def sync_bals():
     global endpoint
     global bals
+    global exclude_from_baltop
     bals = json.loads(requests.get(endpoint + "/get-all-bals").text)
     bals["aaaaaaaaaa (poggingfish)"] = bals["aaaaaaaaaa"]
     bals["buakglrlmx (Stigl)"] = bals["buakglrlmx"]
-    del bals["buakglrlmx"]
-    del bals["aaaaaaaaaa"]
+    exclude_from_baltop = ["aaaaaaaaaa", "buakglrlmx"]
     pog_logger("Synced Balances.", "INFO")
 def create_tx(addr1, addr2, amount, password):
     global txs_waiting
-    global endpoint    
+    global endpoint
     request = requests.post(endpoint + "/tx", f"{addr1} {addr2} {amount} {password}")
     if request.text == "_CLIENT_TRYAGAIN":
         time.sleep(.5)
         create_tx(addr1, addr2, amount, password)
         return 0
-    pog_logger(f"Sent {amount} to {addr2} from {addr1}", "INFO")
+    pog_logger(f"Sent {amount} pogcoin to {addr2} from {addr1}", "INFO")
     txs_waiting -= 1
 def create_wallet():
     global endpoint
@@ -80,12 +81,17 @@ if __name__ == "__main__":
                 command = command.split(" ")
                 base = command[0]
                 if base == "send":
+                    sync_bals()
+                    if command[1] not in bals:
+                        print("Invalid address.")
+                        continue
                     if float(command[2]) < 3:
                         print("Sorry. Minimum amount is 3 PogCoin.")
                         continue
                     usr_input = input("Are you sure you want to send "+ command[2] + " pogcoin to " + command[1] + "? (y/n) ")
                     if usr_input == "y":
-                        print("Sent! Transaction will be broadcasted shortly.")
+                        print("Due to some issues with the server.")
+                        print("There is a delay of a minute or so before the transaction is sent.")
                         txs_waiting += 1
                         pog_logger("Started transaction process.", "INFO")
                         threading.Thread(target=create_tx, args=(name, command[1], command[2], password)).start()
@@ -101,8 +107,12 @@ if __name__ == "__main__":
                 elif base == "baltop":
                     sync_bals()
                     print("Top 3 balances:")
-                    for x in sorted(bals, key=bals.get, reverse=True)[:3]:
-                        print(f"{x}: {bals[x]} PogCoin")
+                    baltop_bals = bals
+                    for x in exclude_from_baltop:
+                        del baltop_bals[x]
+                    baltop_bals = sorted(baltop_bals.items(), key=lambda x: x[1], reverse=True)
+                    for x in baltop_bals[:3]:
+                        print(f"{x[0]} - {x[1]} PogCoin")
                 elif base == "supply":
                     sync_bals()
                     print(f"The current supply is {sum(bals.values())} PogCoin")
