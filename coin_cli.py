@@ -8,22 +8,30 @@ global bals
 txs_waiting = 0
 bals = {}
 def pog_logger(text, type):
+    with open("log.txt", "r") as f:
+        if len(f.readlines()) > 100:
+            with open("log.txt", "w") as f:
+                pass
     with open("log.txt", "a") as f:
         f.write(f"{datetime.datetime.now()} {type}: {text}\n")
 def sync_bals():
     global endpoint
     global bals
     bals = json.loads(requests.get(endpoint + "/get-all-bals").text)
+    bals["aaaaaaaaaa (poggingfish)"] = bals["aaaaaaaaaa"]
+    bals["buakglrlmx (Stigl)"] = bals["buakglrlmx"]
+    del bals["buakglrlmx"]
+    del bals["aaaaaaaaaa"]
     pog_logger("Synced Balances.", "INFO")
 def create_tx(addr1, addr2, amount, password):
     global txs_waiting
     global endpoint    
     request = requests.post(endpoint + "/tx", f"{addr1} {addr2} {amount} {password}")
     if request.text == "_CLIENT_TRYAGAIN":
-        time.sleep(0.1)
+        time.sleep(.5)
         create_tx(addr1, addr2, amount, password)
         return 0
-    pog_logger("Successfully created transaction", "INFO")
+    pog_logger(f"Sent {amount} to {addr2} from {addr1}", "INFO")
     txs_waiting -= 1
 def create_wallet():
     global endpoint
@@ -90,12 +98,25 @@ if __name__ == "__main__":
                     print("Share this with others to receive PogCoin!")
                 elif base == "balance":
                     print(f"Your balance is {get_balance(name)} PogCoin")
+                elif base == "baltop":
+                    sync_bals()
+                    print("Top 3 balances:")
+                    for x in sorted(bals, key=bals.get, reverse=True)[:3]:
+                        print(f"{x}: {bals[x]} PogCoin")
+                elif base == "supply":
+                    sync_bals()
+                    print(f"The current supply is {sum(bals.values())} PogCoin")
     except KeyboardInterrupt:
-        print("Safley exiting...")
+        print("\n\n\nSafley exiting...")
         if txs_waiting > 0:
             print("Waiting for transactions to finish...")
             print("Please wait...")
             while txs_waiting > 0:
                 time.sleep(0.1)
         exit()
-print("Exiting...")
+print("\n\n\nExiting...")
+if txs_waiting > 0:
+    print("Waiting for transactions to finish...")
+    print("Please wait...")
+    while txs_waiting > 0:
+        time.sleep(0.1)
