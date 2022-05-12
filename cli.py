@@ -161,7 +161,7 @@ def main():
             # /tx/<from>/<to>/<amount>/<private_key>
             sync_txs()
             if len(command_split) == 3:
-                if get_balance(json.load(open("wallet.json"))["public_key"]) < int(command_split[2]):
+                if get_balance(json.load(open("wallet.json"))["public_key"]) < float(command_split[2]):
                     print(colorama.Fore.RED + "You do not have enough Pogcoins!")
                     continue
                 yn = input(colorama.Fore.GREEN + "Are you sure you want to send " + colorama.Fore.CYAN + command_split[2] + colorama.Fore.GREEN + " Pogcoins to " + colorama.Fore.CYAN + command_split[1] + colorama.Fore.GREEN + "? (y/n) ")
