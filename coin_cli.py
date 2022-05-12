@@ -8,19 +8,84 @@ import threading
 global bals
 exclude_from_baltop = []
 txs_waiting = 0
+txs = json.loads(open("data/txs.json").read())
 bals = {}
+#Check if the txs and bals files exist
+if os.path.isdir("data") != True:
+    os.mkdir("data")
+if os.path.isfile("data/txs.json") != True:
+    with open("data/txs.json", "w") as f:
+        f.write("""
+{
+    "block_height": 0
+}
+                """)
+if os.path.isfile("data/bals.json") != True:
+    with open("data/bals.json", "w") as f:
+        f.write("""
+{
+    "block_height": 0
+}
+                """)
+if os.path.isfile("data/log.txt") != True:
+    with open("data/log.txt", "w") as f:
+        pass
+    with open("bals.json", "w") as f:
+        f.write("{}")
 def pog_logger(text, type):
-    with open("log.txt", "r") as f:
+    with open("data/log.txt", "r") as f:
         if len(f.readlines()) > 100:
-            with open("log.txt", "w") as f:
+            with open("data/log.txt", "w") as f:
                 pass
-    with open("log.txt", "a") as f:
+    with open("data/log.txt", "a") as f:
         f.write(f"{datetime.datetime.now()} {type}: {text}\n")
 def sync_bals():
+    global txs
     global endpoint
     global bals
     global exclude_from_baltop
-    bals = json.loads(requests.get(endpoint + "/get-all-bals").text)
+    block_height = json.loads(open("data/bals.json").read())["block_height"]
+    request = requests.get(endpoint + f"/current-block-height")
+    request = requests.get(endpoint + f"/get-blocks-since/{block_height}")
+    #Load txs
+    for block in json.loads(request.text):
+        """
+        TX:
+        {
+        0:{
+            "sender": str,
+            "receiver": str,
+            "amount": int,
+            "timestamp": timestamp
+        }
+        }
+        """
+        tx = block
+        if tx["sender"] not in bals:
+            bals[tx["sender"]] = 0
+        if tx["receiver"] not in bals:
+            bals[tx["receiver"]] = 0
+        bals[tx["sender"]] -= tx["amount"]
+        bals[tx["receiver"]] += tx["amount"]
+        txs[tx["block_id"]] = tx
+    #Save txs
+    with open("data/txs.json", "w") as f:
+        f.write(json.dumps(txs, indent=4))
+    #Save block height
+    with open("data/bals.json", "w") as f:
+        request = requests.get(endpoint + f"/current-block-height")
+        f.write(json.dumps({"block_height": request.text}, indent=4))
+    #load txs
+    with open("data/txs.json", "r") as f:
+        txs = json.loads(f.read())
+        #load bals
+        for tx in txs:
+            if txs[tx]["sender"] not in bals:
+                bals[txs[tx]["sender"]] = 0
+            if txs[tx]["receiver"] not in bals:
+                bals[txs[tx]["receiver"]] = 0
+            bals[txs[tx]["sender"]] -= txs[tx]["amount"]
+            bals[txs[tx]["receiver"]] += txs[tx]["amount"]
     bals["aaaaaaaaaa (poggingfish)"] = bals["aaaaaaaaaa"]
     bals["buakglrlmx (Stigl)"] = bals["buakglrlmx"]
     exclude_from_baltop = ["aaaaaaaaaa", "buakglrlmx"]
@@ -73,7 +138,7 @@ if __name__ == "__main__":
         if reset:
             print("Creating new wallets")
             name, password = create_wallet()
-            with open("wallet.txt", "w") as f:
+            with open("data/wallet.txt", "w") as f:
                 f.write(f"{name}\n{password}")
             print("Created wallet.")
             print("!! DO NOT SHARE YOUR WALLET WITH ANYONE !!")
@@ -81,7 +146,7 @@ if __name__ == "__main__":
             pog_logger("New wallet created.", "INFO")
         if run:
             sync_bals()
-            with open("wallet.txt", "r") as f:
+            with open("data/wallet.txt", "r") as f:
                 name, password = f.read().split("\n")
             if name not in bals:
                 print("Your wallet is not in the database. Please create a new wallet.")
@@ -141,11 +206,10 @@ if __name__ == "__main__":
                     print(f"{command[1]} has {bals[command[1]]} PogCoin")
                 elif base == "get_txs":
                     sync_bals()
-                    txs = json.loads(requests.get(endpoint + "/get-txs").text)
                     users_txs = []
                     for x in txs:
-                        if txs[x]["from"] == name or txs[x]["to"] == name:
-                            print(f"{txs[x]['from']} -> {txs[x]['to']} - {txs[x]['amount']} PogCoin at {txs[x]['time']}")
+                        if txs[x]["sender"] == name or txs[x]["receiver"] == name:
+                            print(f"{txs[x]['sender']} -> {txs[x]['receiver']} - {txs[x]['amount']} PogCoin at {txs[x]['time']}")
                 elif base == "purge":
                     if name == "aaaaaaaaaa":
                         print(requests.get(endpoint + "/delete_zero/"+password).text)
