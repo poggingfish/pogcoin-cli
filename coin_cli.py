@@ -144,19 +144,10 @@ if __name__ == "__main__":
                 elif base == "get_txs":
                     sync_bals()
                     txs = json.loads(requests.get(endpoint + "/get-txs").text)
-                    x = int(command[1])
-                    if x >= len(txs):
-                        print("Invalid number.")
-                        continue
-                    while x >= 0:
-                        print("Transaction:")
-                        print("ID: " + str(x))
-                        print(f"From: {txs[str(x)]['from']}")
-                        print(f"To: {txs[str(x)]['to']}")
-                        print(f"Amount: {txs[str(x)]['amount']}")
-                        print(f"Timestamp: {txs[str(x)]['time']}")
-                        print("")
-                        x -= 1
+                    users_txs = []
+                    for x in txs:
+                        if txs[x]["from"] == name or txs[x]["to"] == name:
+                            print(f"{txs[x]['from']} -> {txs[x]['to']} - {txs[x]['amount']} PogCoin at {txs[x]['time']}")
     except KeyboardInterrupt:
         print("\n\n\nSafley exiting...")
         if txs_waiting > 0:
