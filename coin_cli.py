@@ -99,9 +99,6 @@ if __name__ == "__main__":
                     if command[1] not in bals:
                         print("Invalid address.")
                         continue
-                    if float(command[2]) < 3:
-                        print("Sorry. Minimum amount is 3 PogCoin.")
-                        continue
                     usr_input = input("Are you sure you want to send "+ command[2] + " pogcoin to " + command[1] + "? (y/n) ")
                     if usr_input == "y":
                         print("Your transaction will be sent shortly.")
