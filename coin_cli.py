@@ -141,6 +141,22 @@ if __name__ == "__main__":
                         print("Invalid address.")
                         continue
                     print(f"{command[1]} has {bals[command[1]]} PogCoin")
+                elif base == "get_txs":
+                    sync_bals()
+                    txs = json.loads(requests.get(endpoint + "/get-txs").text)
+                    x = int(command[1])
+                    if x >= len(txs):
+                        print("Invalid number.")
+                        continue
+                    while x >= 0:
+                        print("Transaction:")
+                        print("ID: " + str(x))
+                        print(f"From: {txs[str(x)]['from']}")
+                        print(f"To: {txs[str(x)]['to']}")
+                        print(f"Amount: {txs[str(x)]['amount']}")
+                        print(f"Timestamp: {txs[str(x)]['time']}")
+                        print("")
+                        x -= 1
     except KeyboardInterrupt:
         print("\n\n\nSafley exiting...")
         if txs_waiting > 0:
