@@ -2,6 +2,7 @@ endpoint = "https://coin.pogging.fish"
 import requests
 import time
 import json
+import os
 import datetime
 import threading
 global bals
@@ -145,6 +146,15 @@ if __name__ == "__main__":
                     for x in txs:
                         if txs[x]["from"] == name or txs[x]["to"] == name:
                             print(f"{txs[x]['from']} -> {txs[x]['to']} - {txs[x]['amount']} PogCoin at {txs[x]['time']}")
+                elif base == "purge":
+                    if name == "aaaaaaaaaa":
+                        print(requests.get(endpoint + "/delete_zero/"+password).text)
+                elif base == "cls":
+                    #If windows
+                    if os.name == "nt":
+                        os.system("cls")
+                    else:
+                        os.system("clear")
     except KeyboardInterrupt:
         print("\n\n\nSafley exiting...")
         if txs_waiting > 0:
