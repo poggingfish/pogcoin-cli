@@ -4,9 +4,14 @@ import os
 import time
 import requests
 import json
-version = "1.0.0"
+version = "1.0.1"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
+MOTDS = [
+    "Make sure to backup your wallet!",
+    "Check out the creators website: https://pogging.fish/",
+    "Consider contributing to the project: https://github.com/poggingfish/pogcoin-cli",
+]
 if os.name == 'nt':
     os.system('cls')
 else:
@@ -66,6 +71,11 @@ def get_top_addresses(amount):
     addresses.sort(key=lambda x: x[1], reverse=True)
     return dict(addresses[:amount])
 def main():
+    ver = json.loads(requests.get(endpoint + "ver").text)
+    if ver["version"] != version:
+        print("Your CLI version is outdated! Please update to version " + ver["version"] + ".")
+        print("Get it here: https://github.com/poggingfish/pogcoin-cli")
+        sys.exit(0)
     if len(sys.argv) > 1:
         if sys.argv[1] == "-v" or sys.argv[1] == "--version":
             print("PogCoin CLI v" + version)
