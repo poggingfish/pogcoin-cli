@@ -21,7 +21,7 @@ def sync_bals():
     global exclude_from_baltop
     bals = json.loads(requests.get(endpoint + "/get-all-bals").text)
     bals["aaaaaaaaaa (poggingfish)"] = bals["aaaaaaaaaa"]
-    bals["buakglrlmx (Stigl)"] = bals["buakglrlmx"]
+    bals["1akglrlmx (Stigl)"] = bals["buakglrlmx"]
     exclude_from_baltop = ["aaaaaaaaaa", "buakglrlmx"]
     pog_logger("Synced Balances.", "INFO")
 def create_tx(addr1, addr2, amount, password):
@@ -32,8 +32,14 @@ def create_tx(addr1, addr2, amount, password):
         time.sleep(.5)
         create_tx(addr1, addr2, amount, password)
         return 0
-    pog_logger(f"Sent {amount} pogcoin to {addr2} from {addr1}", "INFO")
-    txs_waiting -= 1
+    if request.text == "TX Successful!":
+        pog_logger(f"Sent {amount} pogcoin to {addr2} from {addr1}", "INFO")
+        txs_waiting -= 1
+    else:
+        pog_logger(f"Failed to send {amount} pogcoin to {addr2} from {addr1}", "ERROR")
+        print("\n\n FAILED TO SEND TX \n\n")
+        print(request.text)
+    return 1
 def create_wallet():
     global endpoint
     print("Creating wallet...")
@@ -94,6 +100,7 @@ if __name__ == "__main__":
                         txs_waiting += 1
                         pog_logger("Started transaction process.", "INFO")
                         threading.Thread(target=create_tx, args=(name, command[1], command[2], password)).start()
+                        time.sleep(1)
                     if usr_input == "n":
                         print("Cancelled.")
                 elif base == "exit":
@@ -105,12 +112,12 @@ if __name__ == "__main__":
                     print(f"Your balance is {get_balance(name)} PogCoin")
                 elif base == "baltop":
                     sync_bals()
-                    print("Top 3 balances:")
+                    print(f"Top {command[1]} balances:")
                     baltop_bals = bals
                     for x in exclude_from_baltop:
                         del baltop_bals[x]
                     baltop_bals = sorted(baltop_bals.items(), key=lambda x: x[1], reverse=True)
-                    for x in baltop_bals[:3]:
+                    for x in baltop_bals[:int(command[1])]:
                         print(f"{x[0]} - {x[1]} PogCoin")
                 elif base == "supply":
                     sync_bals()
