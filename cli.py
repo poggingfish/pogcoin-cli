@@ -130,7 +130,7 @@ def main():
         os.system('tput cnorm')
     #START OF CLI
     print(colorama.Fore.GREEN + "\n\nPogcoin CLI v" + version + "\n")
-    print(colorama.Fore.GREEN + "Made by: " + colorama.Fore.RED + "Dylan")
+    print(colorama.Fore.GREEN + "Made by: " + colorama.Fore.RED + "poggingfish")
     print(colorama.Fore.GREEN + random.choice(MOTDS))
     print(colorama.Fore.GREEN + "Type 'help' for help")
     while True:
