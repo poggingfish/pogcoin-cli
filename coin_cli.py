@@ -21,7 +21,7 @@ def sync_bals():
     global exclude_from_baltop
     bals = json.loads(requests.get(endpoint + "/get-all-bals").text)
     bals["aaaaaaaaaa (poggingfish)"] = bals["aaaaaaaaaa"]
-    bals["1akglrlmx (Stigl)"] = bals["buakglrlmx"]
+    bals["buakglrlmx (Stigl)"] = bals["buakglrlmx"]
     exclude_from_baltop = ["aaaaaaaaaa", "buakglrlmx"]
     pog_logger("Synced Balances.", "INFO")
 def create_tx(addr1, addr2, amount, password):
@@ -133,6 +133,8 @@ if __name__ == "__main__":
                     for x in exclude_from_baltop:
                         del baltop_bals[x]
                     print(f"The current supply is {sum(baltop_bals.values())} PogCoin")
+                    del baltop_bals["burn"]
+                    print(f"The current usable supply is {sum(baltop_bals.values())} PogCoin")
                 elif base == "balanceof":
                     sync_bals()
                     if command[1] not in bals:
