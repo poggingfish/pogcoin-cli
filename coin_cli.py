@@ -27,7 +27,7 @@ def sync_bals():
 def create_tx(addr1, addr2, amount, password):
     global txs_waiting
     global endpoint
-    request = requests.post(endpoint + "/tx", f"{addr1} {addr2} {amount} {password}")
+    request = requests.get(endpoint + f"/tx/{addr1}/{addr2}/{amount}/{password}")
     if request.text == "_CLIENT_TRYAGAIN":
         time.sleep(.5)
         create_tx(addr1, addr2, amount, password)
@@ -90,8 +90,7 @@ if __name__ == "__main__":
                         continue
                     usr_input = input("Are you sure you want to send "+ command[2] + " pogcoin to " + command[1] + "? (y/n) ")
                     if usr_input == "y":
-                        print("Due to some issues with the server.")
-                        print("There is a delay of a minute or so before the transaction is sent.")
+                        print("Your transaction will be sent shortly.")
                         txs_waiting += 1
                         pog_logger("Started transaction process.", "INFO")
                         threading.Thread(target=create_tx, args=(name, command[1], command[2], password)).start()
@@ -116,6 +115,12 @@ if __name__ == "__main__":
                 elif base == "supply":
                     sync_bals()
                     print(f"The current supply is {sum(bals.values())} PogCoin")
+                elif base == "balanceof":
+                    sync_bals()
+                    if command[1] not in bals:
+                        print("Invalid address.")
+                        continue
+                    print(f"{command[1]} has {bals[command[1]]} PogCoin")
     except KeyboardInterrupt:
         print("\n\n\nSafley exiting...")
         if txs_waiting > 0:
