@@ -39,6 +39,7 @@ def create_tx(addr1, addr2, amount, password):
         pog_logger(f"Failed to send {amount} pogcoin to {addr2} from {addr1}", "ERROR")
         print("\n\n FAILED TO SEND TX \n\n")
         print(request.text)
+        txs_waiting -= 1
     return 1
 def create_wallet():
     global endpoint
@@ -78,8 +79,15 @@ if __name__ == "__main__":
             print("Your wallet is saved in wallet.txt")
             pog_logger("New wallet created.", "INFO")
         if run:
+            sync_bals()
             with open("wallet.txt", "r") as f:
                 name, password = f.read().split("\n")
+            if name not in bals:
+                print("Your wallet is not in the database. Please create a new wallet.")
+                print("Possible reasons:")
+                print("You have not created a wallet yet.")
+                print("Your wallet was purged when wiping zero balance wallets.")
+                exit()
             print("Welcome to the PogCoin CLI!")
             print("ADDR: " + name)
             while True:
@@ -121,7 +129,10 @@ if __name__ == "__main__":
                         print(f"{x[0]} - {x[1]} PogCoin")
                 elif base == "supply":
                     sync_bals()
-                    print(f"The current supply is {sum(bals.values())} PogCoin")
+                    baltop_bals = bals
+                    for x in exclude_from_baltop:
+                        del baltop_bals[x]
+                    print(f"The current supply is {sum(baltop_bals.values())} PogCoin")
                 elif base == "balanceof":
                     sync_bals()
                     if command[1] not in bals:
