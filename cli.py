@@ -4,13 +4,21 @@ import os
 import time
 import requests
 import json
+import random
 version = "1.0.1"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
 MOTDS = [
     "Make sure to backup your wallet!",
-    "Check out the creators website: https://pogging.fish/",
+    "Check out my website: https://pogging.fish/",
     "Consider contributing to the project: https://github.com/poggingfish/pogcoin-cli",
+    "This is a beta version, so please report any bugs you find!",
+    "If you like this project, you might like some of my other projects: https://pogging.fish/",
+    "This client is open source, so feel free to fork it and make your own version!",
+    "The API's are free to use. So you can make your own client!",
+    "Documentation is coming soon!",
+    "A GUI is coming soon!",
+    "Pogcoin != Cryptocurrency"
 ]
 if os.name == 'nt':
     os.system('cls')
@@ -123,6 +131,7 @@ def main():
     #START OF CLI
     print(colorama.Fore.GREEN + "\n\nPogcoin CLI v" + version + "\n")
     print(colorama.Fore.GREEN + "Made by: " + colorama.Fore.RED + "Dylan")
+    print(colorama.Fore.GREEN + random.choice(MOTDS))
     print(colorama.Fore.GREEN + "Type 'help' for help")
     while True:
         command_split = input(colorama.Fore.GREEN + "> " + colorama.Fore.WHITE).split(" ")
