@@ -58,6 +58,13 @@ def get_total_supply():
     for x in get_all_addresses():
         supply += get_balance(x)
     return supply
+def get_top_addresses(amount):
+    global txs
+    addresses = []
+    for x in get_all_addresses():
+        addresses.append((x, get_balance(x)))
+    addresses.sort(key=lambda x: x[1], reverse=True)
+    return dict(addresses[:amount])
 def main():
     if len(sys.argv) > 1:
         if sys.argv[1] == "-v" or sys.argv[1] == "--version":
@@ -126,6 +133,7 @@ def main():
             print(colorama.Fore.GREEN + "txinfo <tx_id> - Displays information about a transaction")
             print(colorama.Fore.GREEN + "addr - Displays your address")
             print(colorama.Fore.GREEN + "supply - Displays the total supply")
+            print(colorama.Fore.GREEN + "top <amount> - Displays the top <amount> addresses")
             print(colorama.Fore.GREEN + "exit - Exits the program")
         elif command == "balance":
             sync_txs()
@@ -176,6 +184,15 @@ def main():
         elif command == "supply":
             sync_txs()
             print(colorama.Fore.WHITE + "The total supply is: " + colorama.Fore.CYAN + str(get_total_supply()))
+        elif command == "top":
+            sync_txs()
+            if len(command_split) == 2:
+                top_addresses = get_top_addresses(int(command_split[1]))
+                for address in top_addresses:
+                    #Print the address and the balance
+                    print(colorama.Fore.WHITE + str(top_addresses[address]) + colorama.Fore.CYAN + " Pogcoins from " + colorama.Fore.WHITE + address)        
+            else:
+                print(colorama.Fore.RED + "Not enough arguments!")
         elif command == "exit":
             break
     print(colorama.Fore.GREEN + "Exiting...")
