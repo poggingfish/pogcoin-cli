@@ -7,6 +7,7 @@ import json
 import random
 import regex as re
 import difflib
+import signal
 version = "1.0.5"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
@@ -80,8 +81,22 @@ def get_top_addresses(amount):
         addresses.append((x, get_balance(x)))
     addresses.sort(key=lambda x: x[1], reverse=True)
     return dict(addresses[:amount])
+def signal_handler(sig, frame):
+    print("\n")
+    print(colorama.Fore.GREEN + "Exiting...")
+    sync_txs()
+    #Re-enable cursor
+    if os.name == 'nt':
+        os.system('mode con: cols=80 lines=20')
+    else:
+        os.system('tput cnorm')
+    if os.path.isfile("wallet_bkp.json"):
+        os.system("mv wallet_bkp.json wallet.json")
+    sys.exit()
+signal.signal(signal.SIGTSTP, signal_handler)
 def main():
     doas = False
+    temp_wallet = False
     ver = json.loads(requests.get(endpoint + "ver").text)
     if ver["version"] != version:
         print("Your CLI version is outdated! Please update to version " + ver["version"] + ".")
@@ -95,11 +110,15 @@ def main():
             sys.exit()
         elif sys.argv[1] == "--help":
             print("-v or --version: Prints the version of the CLI.")
+            print("--temp-wallet: Creates a temporary wallet.")
             sys.exit()
+        elif sys.argv[1] == "--temp-wallet":
+            temp_wallet = True
         else:
             print("Unknown argument: " + sys.argv[1])
             print("Use --help for more info.")
             sys.exit()
+    
     global txs
     print("\n\n")
     #check if wallet.json exists
@@ -141,6 +160,11 @@ def main():
     else:
         os.system('tput cnorm')
     #START OF CLI
+    if temp_wallet:
+        temporary_wallet = json.loads(requests.get(endpoint + "wallet").text)
+        os.system("mv wallet.json wallet_bkp.json")
+        with open("wallet.json", "w") as f:
+            json.dump(temporary_wallet, f, indent=4)
     print(colorama.Fore.GREEN + "\n\nPogcoin CLI v" + version + "\n")
     print(colorama.Fore.GREEN + "Made by: " + colorama.Fore.RED + "poggingfish\n")
     print(colorama.Fore.GREEN + random.choice(MOTDS))
@@ -253,6 +277,9 @@ def main():
                 else:
                     print(colorama.Fore.RED + tx.text)
         elif command == "doas":
+            if temp_wallet:
+                print(colorama.Fore.RED + "You cannot doas while in a temporary wallet!")
+                continue
             if doas == True:
                 print(colorama.Fore.RED + "Please use doas_back before using doas again!")
                 continue
@@ -276,6 +303,9 @@ def main():
             json.dump(wallet, open("wallet.json", "w"))
             doas = True
         elif command == "doas_back":
+            if temp_wallet:
+                print(colorama.Fore.RED + "You cannot doas_back while in a temporary wallet!")
+                continue
             #Copy the wallet_bkp.json file to wallet.json
             os.remove("wallet.json")
             os.rename("wallet_bkp.json", "wallet.json")
@@ -307,8 +337,8 @@ def main():
                     print(colorama.Fore.RED + "Invalid command!")
     print(colorama.Fore.GREEN + "Exiting...")
     sync_txs()
-    os.system("mv wallet_bkp.json wallet.json")
-    os.system("rm wallet_bkp.json")
+    if os.path.isfile("wallet_bkp.json"):
+        os.system("mv wallet_bkp.json wallet.json")
     sys.exit()
 if __name__ == '__main__':
     try:
@@ -322,5 +352,6 @@ if __name__ == '__main__':
             os.system('mode con: cols=80 lines=20')
         else:
             os.system('tput cnorm')
-        os.system("mv wallet_bkp.json wallet.json")
+        if os.path.isfile("wallet_bkp.json"):
+            os.system("mv wallet_bkp.json wallet.json")
         sys.exit()
