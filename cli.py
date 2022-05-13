@@ -5,7 +5,9 @@ import time
 import requests
 import json
 import random
-version = "1.0.3"
+import regex as re
+import difflib
+version = "1.0.4"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
 MOTDS = [
@@ -83,10 +85,19 @@ def main():
     if ver["version"] != version:
         print("Your CLI version is outdated! Please update to version " + ver["version"] + ".")
         print("Get it here: https://github.com/poggingfish/pogcoin-cli")
+        print("Or. If you cloned the repo, run :")
+        print("git pull")
         sys.exit(0)
     if len(sys.argv) > 1:
         if sys.argv[1] == "-v" or sys.argv[1] == "--version":
             print("PogCoin CLI v" + version)
+            sys.exit()
+        elif sys.argv[1] == "--help":
+            print("-v or --version: Prints the version of the CLI.")
+            sys.exit()
+        else:
+            print("Unknown argument: " + sys.argv[1])
+            print("Use --help for more info.")
             sys.exit()
     global txs
     print("\n\n")
@@ -242,7 +253,25 @@ def main():
             break
         else:
             if command != "":
-                print(colorama.Fore.RED + "Invalid command!")
+                #Detect close matches (Be generous)
+                commands = ["balanceof", 
+                            "history", 
+                            "txinfo", 
+                            "addr", 
+                            "supply", 
+                            "top", 
+                            "resync", 
+                            "burn", 
+                            "exit", 
+                            "cls", 
+                            "clear",
+                            "help"]
+                #Get the closest match
+                closest_match = difflib.get_close_matches(command, commands, 1, 0.5)
+                if len(closest_match) > 0:
+                    print(colorama.Fore.RED + "Did you mean " + colorama.Fore.CYAN + closest_match[0] + colorama.Fore.RED + "?")
+                else:
+                    print(colorama.Fore.RED + "Invalid command!")
     print(colorama.Fore.GREEN + "Exiting...")
     sync_txs()
     sys.exit()
