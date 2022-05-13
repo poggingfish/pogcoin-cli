@@ -154,6 +154,7 @@ def main():
             print(colorama.Fore.GREEN + "addr - Displays your address")
             print(colorama.Fore.GREEN + "supply - Displays the total supply")
             print(colorama.Fore.GREEN + "top <amount> - Displays the top <amount> addresses")
+            print(colorama.Fore.GREEN + "resync - Resyncs the transaction history")
             print(colorama.Fore.GREEN + "exit - Exits the program")
         elif command == "balance":
             sync_txs()
@@ -213,9 +214,14 @@ def main():
                 top_addresses = get_top_addresses(int(command_split[1]))
                 for address in top_addresses:
                     #Print the address and the balance
-                    print(colorama.Fore.WHITE + str(top_addresses[address]) + colorama.Fore.CYAN + " Pogcoins from " + colorama.Fore.WHITE + address)        
+                    print(colorama.Fore.WHITE + str(top_addresses[address]) + colorama.Fore.CYAN + " Pogcoins in account " + colorama.Fore.WHITE + address)        
             else:
                 print(colorama.Fore.RED + "Not enough arguments!")
+        elif command == "resync":
+            os.remove("txs.json")
+            with open("txs.json", "w") as txs_file:
+                txs_file.write("{}")
+            sync_txs()
         elif command == "exit":
             break
         else:
