@@ -130,11 +130,13 @@ def main():
         os.system('tput cnorm')
     #START OF CLI
     print(colorama.Fore.GREEN + "\n\nPogcoin CLI v" + version + "\n")
-    print(colorama.Fore.GREEN + "Made by: " + colorama.Fore.RED + "poggingfish")
+    print(colorama.Fore.GREEN + "Made by: " + colorama.Fore.RED + "poggingfish\n")
     print(colorama.Fore.GREEN + random.choice(MOTDS))
-    print(colorama.Fore.GREEN + "Type 'help' for help")
+    print(colorama.Fore.GREEN + "\nType 'help' for help")
     while True:
-        command_split = input(colorama.Fore.GREEN + "> " + colorama.Fore.WHITE).split(" ")
+        #Display shell as publickey ~$
+        command_split = input(colorama.Fore.CYAN + json.loads(open("wallet.json").read())["public_key"] + colorama.Fore.GREEN + " ~$ " + colorama.Fore.WHITE).split(" ")              
+        #Input  parsing
         command = command_split[0]
         if command == "cls" or command == "clear":
             if os.name == 'nt':
@@ -174,6 +176,8 @@ def main():
                         print(colorama.Fore.RED + tx.text)
                 else:
                     print(colorama.Fore.GREEN + "Transaction cancelled!")
+            else:
+                print(colorama.Fore.RED + "Not enough arguments!")
         elif command == "balanceof":
             sync_txs()
             if len(command_split) == 2:
