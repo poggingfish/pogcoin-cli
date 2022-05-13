@@ -251,6 +251,8 @@ def main():
                 else:
                     print(colorama.Fore.RED + tx.text)
         elif command == "doas":
+            if len(command_split) != 2:
+                print(colorama.Fore.RED + "Not enough arguments!")
             #Copy the wallet.json file to wallet_bkp.json
             os.rename("wallet.json", "wallet_bkp.json")
             os.system("cp wallet_bkp.json wallet.json")
