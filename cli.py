@@ -168,6 +168,7 @@ def main():
             print(colorama.Fore.GREEN + "top <amount> - Displays the top <amount> addresses")
             print(colorama.Fore.GREEN + "resync - Resyncs the transaction history")
             print(colorama.Fore.GREEN + "burn <amount> - Permenantly destroys pogcoins")
+            print(colorama.Fore.GREEN + "doas <user> <private_key> - Become another user")
             print(colorama.Fore.GREEN + "exit - Exits the program")
         elif command == "balance":
             sync_txs()
@@ -249,7 +250,20 @@ def main():
                     sync_txs()
                 else:
                     print(colorama.Fore.RED + tx.text)
+        elif command == "doas":
+            #Copy the wallet.json file to wallet_bkp.json
+            os.rename("wallet.json", "wallet_bkp.json")
+            os.system("cp wallet_bkp.json wallet.json")
+            #save the private key and public key to the wallet.json file
+            #The private key is the last argument
+            #The public key is the first argument
+            with open("wallet.json", "r") as wallet_file:
+                wallet = json.load(wallet_file)
+            wallet["public_key"] = command_split[1]
+            wallet["private_key"] = command_split[2]
+            json.dump(wallet, open("wallet.json", "w"))
         elif command == "exit":
+            
             break
         else:
             if command != "":
@@ -275,6 +289,8 @@ def main():
                     print(colorama.Fore.RED + "Invalid command!")
     print(colorama.Fore.GREEN + "Exiting...")
     sync_txs()
+    os.system("mv wallet_bkp.json wallet.json")
+    os.system("rm wallet_bkp.json")
     sys.exit()
 if __name__ == '__main__':
     try:
@@ -288,4 +304,5 @@ if __name__ == '__main__':
             os.system('mode con: cols=80 lines=20')
         else:
             os.system('tput cnorm')
+        os.system("mv wallet_bkp.json wallet.json")
         sys.exit()
