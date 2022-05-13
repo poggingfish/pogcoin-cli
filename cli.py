@@ -32,7 +32,6 @@ def loading_bar(times):
     sys.stdout.write("\rLoading: " + colorama.Fore.GREEN + "Done!\n")
 def sync_txs():
     global txs
-    json.dump(txs, open("txs.json", "w"), indent=4)
     txs = json.load(open("txs.json"))
     if len(txs)-1 > 0:
         highest_id = int(txs[str(len(txs)-1)]["tx_id"])
