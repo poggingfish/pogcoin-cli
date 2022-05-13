@@ -219,6 +219,9 @@ def main():
                 print(colorama.Fore.RED + "Not enough arguments!")
         elif command == "exit":
             break
+        else:
+            if command != "":
+                print(colorama.Fore.RED + "Invalid command!")
     print(colorama.Fore.GREEN + "Exiting...")
     sync_txs()
     sys.exit()
