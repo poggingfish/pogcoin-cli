@@ -5,7 +5,7 @@ import time
 import requests
 import json
 import random
-version = "1.0.2"
+version = "1.0.3"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
 MOTDS = [
@@ -185,6 +185,7 @@ def main():
             else:
                 print(colorama.Fore.RED + "Not enough arguments!")
         elif command == "history":
+            sync_txs()
             for tx in txs:
                 if txs[tx]["from"] == json.load(open("wallet.json"))["public_key"]:
                     print(colorama.Fore.WHITE + "You sent " + colorama.Fore.CYAN + str(txs[tx]["amount"]) + colorama.Fore.WHITE + " Pogcoins to " + colorama.Fore.CYAN + txs[tx]["to"])
