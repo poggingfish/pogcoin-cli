@@ -5,7 +5,7 @@ import time
 import requests
 import json
 import random
-version = "1.0.1"
+version = "1.0.2"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
 MOTDS = [
