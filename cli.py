@@ -7,7 +7,7 @@ import json
 import random
 import regex as re
 import difflib
-version = "1.0.4"
+version = "1.0.5"
 txs = {}
 endpoint = "https://coin.pogging.fish/"
 MOTDS = [
@@ -81,12 +81,13 @@ def get_top_addresses(amount):
     addresses.sort(key=lambda x: x[1], reverse=True)
     return dict(addresses[:amount])
 def main():
+    doas = False
     ver = json.loads(requests.get(endpoint + "ver").text)
     if ver["version"] != version:
         print("Your CLI version is outdated! Please update to version " + ver["version"] + ".")
         print("Get it here: https://github.com/poggingfish/pogcoin-cli")
-        print("Or. If you cloned the repo, run :")
-        print("git pull")
+        print("Or. If you cloned the repo, run: " + colorama.Fore.GREEN + "git pull")
+        print("\n\n")
         sys.exit(0)
     if len(sys.argv) > 1:
         if sys.argv[1] == "-v" or sys.argv[1] == "--version":
@@ -169,6 +170,7 @@ def main():
             print(colorama.Fore.GREEN + "resync - Resyncs the transaction history")
             print(colorama.Fore.GREEN + "burn <amount> - Permenantly destroys pogcoins")
             print(colorama.Fore.GREEN + "doas <user> <private_key> - Become another user")
+            print(colorama.Fore.GREEN + "doas_back - Become the original user")
             print(colorama.Fore.GREEN + "exit - Exits the program")
         elif command == "balance":
             sync_txs()
@@ -251,8 +253,15 @@ def main():
                 else:
                     print(colorama.Fore.RED + tx.text)
         elif command == "doas":
-            if len(command_split) != 2:
+            if doas == True:
+                print(colorama.Fore.RED + "Please use doas_back before using doas again!")
+                continue
+            if len(command_split) < 3:
                 print(colorama.Fore.RED + "Not enough arguments!")
+                continue
+            if len(command_split) > 3:
+                print(colorama.Fore.RED + "Too many arguments!")
+                continue
             #Copy the wallet.json file to wallet_bkp.json
             os.rename("wallet.json", "wallet_bkp.json")
             os.system("cp wallet_bkp.json wallet.json")
@@ -261,9 +270,16 @@ def main():
             #The public key is the first argument
             with open("wallet.json", "r") as wallet_file:
                 wallet = json.load(wallet_file)
+            #Make sure command has not been run before
             wallet["public_key"] = command_split[1]
             wallet["private_key"] = command_split[2]
             json.dump(wallet, open("wallet.json", "w"))
+            doas = True
+        elif command == "doas_back":
+            #Copy the wallet_bkp.json file to wallet.json
+            os.remove("wallet.json")
+            os.rename("wallet_bkp.json", "wallet.json")
+            doas = False
         elif command == "exit":
             
             break
