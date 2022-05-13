@@ -69,7 +69,8 @@ def get_total_supply():
     supply = 0
     for x in get_all_addresses():
         supply += get_balance(x)
-    return supply
+    usable_supply = supply - get_balance("000000000000000")
+    return supply, usable_supply
 def get_top_addresses(amount):
     global txs
     addresses = []
@@ -155,6 +156,7 @@ def main():
             print(colorama.Fore.GREEN + "supply - Displays the total supply")
             print(colorama.Fore.GREEN + "top <amount> - Displays the top <amount> addresses")
             print(colorama.Fore.GREEN + "resync - Resyncs the transaction history")
+            print(colorama.Fore.GREEN + "burn <amount> - Permenantly destroys pogcoins")
             print(colorama.Fore.GREEN + "exit - Exits the program")
         elif command == "balance":
             sync_txs()
@@ -207,7 +209,8 @@ def main():
             print(colorama.Fore.WHITE + "Your address is: " + colorama.Fore.CYAN + json.load(open("wallet.json"))["public_key"])
         elif command == "supply":
             sync_txs()
-            print(colorama.Fore.WHITE + "The total supply is: " + colorama.Fore.CYAN + str(get_total_supply()))
+            print(colorama.Fore.WHITE + "The total supply is: " + colorama.Fore.CYAN + str(get_total_supply()[0]))
+            print(colorama.Fore.WHITE + "The total usable supply is: " + colorama.Fore.CYAN + str(get_total_supply()[1]))
         elif command == "top":
             sync_txs()
             if len(command_split) == 2:
@@ -222,6 +225,19 @@ def main():
             with open("txs.json", "w") as txs_file:
                 txs_file.write("{}")
             sync_txs()
+        elif command == "burn":
+            #Burn address: 000000000000000
+            print("!! THIS IS A PERMANENT BURN ADDRESS !!\n")
+            tx_question = input(colorama.Fore.GREEN + "Are you sure you want to burn " + colorama.Fore.CYAN + command_split[1] + colorama.Fore.GREEN + " Pogcoins? (y/n) ")
+            if tx_question != "y":
+                continue
+            if len(command_split) == 2:
+                tx = requests.get(endpoint + "tx/" + json.load(open("wallet.json"))["public_key"] + "/" + "000000000000000" + "/" + command_split[1] + "/" + json.load(open("wallet.json"))["private_key"])
+                if tx.text == "Transaction successful":
+                    print(colorama.Fore.GREEN + "Destroyed " + colorama.Fore.CYAN + command_split[1] + colorama.Fore.GREEN + " Pogcoins!")
+                    sync_txs()
+                else:
+                    print(colorama.Fore.RED + tx.text)
         elif command == "exit":
             break
         else:
