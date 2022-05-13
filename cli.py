@@ -265,7 +265,8 @@ def main():
                             "exit", 
                             "cls", 
                             "clear",
-                            "help"]
+                            "help",
+                            "balance"]
                 #Get the closest match
                 closest_match = difflib.get_close_matches(command, commands, 1, 0.5)
                 if len(closest_match) > 0:
